@@ -1,1 +1,1 @@
-web: ultralist-webhooks
+web: ultralist-websockets
