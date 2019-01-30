@@ -69,6 +69,10 @@ func (s *Server) Serve(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
+		if req.Request == "ping" {
+			break
+		}
+
 		fmt.Printf("appending channel '%s' to connections list", req.Channel)
 		connectionsForToken := s.Connections[req.Channel]
 		connectionsForToken = append(connectionsForToken, conn)
