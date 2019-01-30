@@ -55,11 +55,11 @@ func (s *Server) Serve(w http.ResponseWriter, r *http.Request) {
 	for {
 		_, message, err := conn.ReadMessage()
 		if err != nil {
-			log.Println("Read error: ", err)
+			fmt.Println("Read error: ", err)
 			s.removeConnection(conn)
 			break
 		}
-		log.Printf("recv: '%s'", message)
+		fmt.Printf("\n-------------------------\nrecv: '%s'\n", message)
 
 		req := &Request{}
 		err = json.Unmarshal(message, req)
@@ -70,7 +70,7 @@ func (s *Server) Serve(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if req.Request == "ping" {
-			break
+			continue
 		}
 
 		fmt.Printf("appending channel '%s' to connections list", req.Channel)
