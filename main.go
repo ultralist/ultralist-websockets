@@ -55,11 +55,11 @@ func (s *Server) Serve(w http.ResponseWriter, r *http.Request) {
 	for {
 		_, message, err := conn.ReadMessage()
 		if err != nil {
-			fmt.Println("Read error: ", err)
+			s.logDebug(fmt.Sprintf("Read error: %s", err))
 			s.removeConnection(conn)
 			break
 		}
-		fmt.Printf("\n-------------------------\nrecv: '%s'\n", message)
+		s.logDebug(fmt.Sprintf("\n-------------------------\nrecv: '%s'\n", message))
 
 		req := &Request{}
 		err = json.Unmarshal(message, req)
@@ -73,10 +73,10 @@ func (s *Server) Serve(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
-		fmt.Printf("appending channel '%s' to connections list", req.Channel)
 		connectionsForToken := s.Connections[req.Channel]
 		connectionsForToken = append(connectionsForToken, conn)
 		s.Connections[req.Channel] = connectionsForToken
+		s.logDebug(fmt.Sprintf("Channel '%s' adding connection #%d", req.Channel, len(s.Connections[req.Channel])))
 	}
 }
 
@@ -108,7 +108,7 @@ func (s *Server) SetupRedisListener() {
 				panic(err)
 			}
 
-			log.Println("redis result is ", result[1])
+			s.logDebug(fmt.Sprintf("redis result is %s", result[1]))
 
 			req := &Request{}
 			err = json.Unmarshal([]byte(result[1]), req)
@@ -124,7 +124,7 @@ func (s *Server) SetupRedisListener() {
 func (s *Server) WriteResponseToWebsocket(response *Request) {
 	channel := response.Channel
 
-	log.Println("Writing response, using channel ", channel)
+	s.logDebug(fmt.Sprintf("Writing response, using channel %s", channel))
 
 	conns := s.Connections[channel]
 	for _, conn := range conns {
@@ -164,7 +164,7 @@ func (s *Server) removeConnection(c *websocket.Conn) {
 	for k, connections := range s.Connections {
 		for i, connection := range connections {
 			if c == connection {
-				log.Printf("Found bad connection at [%s][%v]", k, i)
+				s.logDebug(fmt.Sprintf("Found bad connection at [%s][%v]", k, i))
 				key = k
 				indexToDelete = i
 			}
@@ -180,5 +180,11 @@ func (s *Server) removeConnection(c *websocket.Conn) {
 
 	if len(s.Connections[key]) == 0 {
 		delete(s.Connections, key)
+	}
+}
+
+func (s *Server) logDebug(str string) {
+	if len(os.Getenv("DEBUG")) != 0 {
+		log.Println(str)
 	}
 }
