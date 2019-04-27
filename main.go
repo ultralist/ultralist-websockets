@@ -13,8 +13,6 @@ import (
 )
 
 var addr = flag.String("addr", "0.0.0.0:8080", "http service address")
-var redisAddr = flag.String("redisAddr", "localhost:6379", "redis address")
-var ultradeckBackendAddr = flag.String("ultradeckBackendAddr", "localhost:3000", "ultradeck backend address")
 
 // Server is server stuff
 type Server struct {
@@ -43,8 +41,15 @@ func main() {
 	if len(port) == 0 {
 		port = "8080"
 	}
-	url := fmt.Sprintf("0.0.0.0:%s", port)
+
+	url := fmt.Sprintf("0.0.0:%s", port)
 	log.Println("Listening at ", url)
+
+	url = os.Getenv("LISTEN_URL)")
+	if len(url) == 0 {
+		url = "0.0.0.0:8080"
+	}
+
 	log.Fatal(http.ListenAndServe(url, nil))
 }
 
