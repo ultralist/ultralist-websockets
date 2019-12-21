@@ -12,8 +12,6 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-var addr = flag.String("addr", "0.0.0.0:8080", "http service address")
-
 // Server is server stuff
 type Server struct {
 	Connections map[string][]*websocket.Conn
@@ -44,11 +42,6 @@ func main() {
 
 	url := fmt.Sprintf("0.0.0:%s", port)
 	log.Println("Listening at ", url)
-
-	url = os.Getenv("LISTEN_URL)")
-	if len(url) == 0 {
-		url = "0.0.0.0:8080"
-	}
 
 	log.Fatal(http.ListenAndServe(url, nil))
 }
