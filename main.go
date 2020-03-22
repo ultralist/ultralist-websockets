@@ -40,7 +40,7 @@ func main() {
 		port = "8080"
 	}
 
-	url := fmt.Sprintf("0.0.0:%s", port)
+	url := fmt.Sprintf("0.0.0.0:%s", port)
 	log.Println("Listening at ", url)
 
 	log.Fatal(http.ListenAndServe(url, nil))
