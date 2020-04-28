@@ -1,8 +1,6 @@
-ARG GO_VERSION=1.13.5
+ARG GO_VERSION=1.14.1
 
-FROM golang:${GO_VERSION}-alpine as builder
-
-RUN apk add --no-cache ca-certificates git
+FROM golang:${GO_VERSION}-buster as builder
 
 WORKDIR /src
 
@@ -15,11 +13,9 @@ RUN CGO_ENABLED=0 go build \
     -installsuffix 'static' \
     -o /app .
 
-FROM scratch as final
-
 #COPY --from=builder /user/group /user/passwd /etc/
-COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
-COPY --from=builder /app /app
+#COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+#COPY --from=builder /app /app
 
 EXPOSE 8080
 
