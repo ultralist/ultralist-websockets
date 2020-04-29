@@ -83,7 +83,7 @@ func (s *Server) SetupRedisListener() {
 
 	url := os.Getenv("REDIS_URL")
 	if len(url) == 0 {
-		url = "redis://localhost:6379"
+		url = "redis://127.0.0.1:6379"
 	}
 
 	opt, err := redis.ParseURL(url)
@@ -99,24 +99,7 @@ func (s *Server) SetupRedisListener() {
 		panic(err)
 	}
 
-	go func() {
-		for {
-			result, err := s.RedisConn.BLPop(0, "ultralist").Result()
-			if err != nil {
-				panic(err)
-			}
-
-			s.logDebug(fmt.Sprintf("redis result is %s", result[1]))
-
-			req := &Request{}
-			err = json.Unmarshal([]byte(result[1]), req)
-			if err != nil {
-				panic(err)
-			}
-
-			s.WriteResponseToWebsocket(req)
-		}
-	}()
+	s.setupPubSubListener()
 }
 
 func (s *Server) WriteResponseToWebsocket(response *Request) {
@@ -137,6 +120,27 @@ func (s *Server) WriteResponseToWebsocket(response *Request) {
 			w.Close()
 		}
 	}
+}
+
+func (s *Server) setupPubSubListener() {
+	pubsub := s.RedisConn.Subscribe("ultralist")
+	channel := pubsub.Channel()
+
+	go func() {
+		for {
+			rawMessage := <-channel
+			s.logDebug(fmt.Sprintf("redis message is %s", rawMessage.Payload))
+
+			req := &Request{}
+			err := json.Unmarshal([]byte(rawMessage.Payload), req)
+
+			if err != nil {
+				panic(err)
+			}
+
+			s.WriteResponseToWebsocket(req)
+		}
+	}()
 }
 
 func (s *Server) upgradeConnection(w http.ResponseWriter, r *http.Request) *websocket.Conn {
