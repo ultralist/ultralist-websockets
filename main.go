@@ -123,7 +123,7 @@ func (s *Server) WriteResponseToWebsocket(response *Request) {
 }
 
 func (s *Server) setupPubSubListener() {
-	pubsub := s.RedisConn.Subscribe("ultralist")
+	pubsub := s.RedisConn.Subscribe("clearlist_realtime")
 	channel := pubsub.Channel()
 
 	go func() {
