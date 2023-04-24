@@ -34,7 +34,9 @@ func main() {
 	server.Connections = make(map[string][]*websocket.Conn)
 	server.SetupRedisListener()
 
-	http.HandleFunc("/", server.Serve)
+	http.HandleFunc("/up", HandleHeartbeat)
+	http.HandleFunc("/ws", server.Serve)
+
 	port := os.Getenv("PORT")
 	if len(port) == 0 {
 		port = "8080"
@@ -44,6 +46,12 @@ func main() {
 	log.Println("Listening at ", url)
 
 	log.Fatal(http.ListenAndServe(url, nil))
+}
+
+func HandleHeartbeat(w http.ResponseWriter, r *http.Request) {
+  w.Header().Set("Content-Type", "application/json")
+  w.WriteHeader(http.StatusOK)
+  w.Write([]byte(`{"alive": true}`))
 }
 
 func (s *Server) Serve(w http.ResponseWriter, r *http.Request) {
